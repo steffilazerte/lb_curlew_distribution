@@ -1,0 +1,10 @@
+project:
+  title: "Long-billed curlew population distribution"
+  output-dir: Results
+  post-render: xx_date_stamp.R
+  
+format:
+  html: 
+    date: today
+    toc: true
+  

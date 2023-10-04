@@ -1,0 +1,18 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+*_cache
+
+Results
+Docs
+
+# Ignore all data files except the final one
+Data/*
+!Data/Final
+Data/Final/*
+!Data/Final/XXX.csv  # Name of the final data file
+!Data/README.md
+
+/.quarto/
