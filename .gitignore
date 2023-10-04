@@ -5,8 +5,9 @@
 
 *_cache
 
-Results
 Docs
+
+./*_files/
 
 # Ignore all data files except the final one
 Data/*

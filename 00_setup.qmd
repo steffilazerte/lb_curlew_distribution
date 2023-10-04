@@ -1,0 +1,60 @@
+---
+title: "0 - Details and Setup"
+---
+
+## Create folders for output
+
+```{r}
+#| warning: false
+dir.create("Data/Intermediate")
+dir.create("Data/Datasets")
+dir.create("Data/Final")
+dir.create("Data/Spatial")
+dir.create("Results")
+dir.create("Results/Figures")
+```
+
+## Get packages
+
+If possible, use renv to restore the packages
+```{r}
+#| eval: false
+renv::restore()
+```
+
+Otherwise install by hand e.g., `install.packages(c("tidyverse", "sf")`
+
+
+## Establish date ranges
+
+We want May 1st to July 31st in Julian days
+
+```{r}
+lubridate::yday(c("2023-05-01",
+                  "2020-05-01", # Leap year
+                  "2023-07-31",
+                  "2020-07-31")) # Leap year
+```
+
+We'll use 121 - 213
+
+
+## Acquire raw data files
+
+- E-bird data must be requested [here](https://ebird.org/data/download/)
+  - I made a special request for Long-billed Curlews from 2010-05 to 2022-08
+  - Once the request is approved you'll get an email and can download the data
+    (I've found this can take between 2 hours and 5 days)
+- You'll also need to download the complete checklist data (currently not available as a special request)
+- Extract all the files (including the internal compressed files)
+  - You'll have to move the 2 main data files into `Data/Raw` after they've been extracted
+  - The sampling file: `ebd_sampling_relMay-2023.txt`
+  - The observations file: `ebd_lobcur_201005_202208_relMay-2023.txt`
+- Tell `auk` where that folder is (below) and **restart R**
+  - Only need to do this step once
+
+```{r}
+auk::auk_set_ebd_path(path = "Data/Raw/", overwrite = TRUE)
+```
+
+

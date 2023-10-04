@@ -1,0 +1,252 @@
+---
+title: "3 - Summarize eBird Data by Grid Cell"
+cache: true
+---
+
+## Setup
+
+```{r}
+#| message: false
+library(auk)
+library(tidyverse)
+library(lubridate)
+library(sf)
+library(assertr)
+
+grid_10 <- read_rds("Data/Datasets/grid_10km.rds")
+grid_20 <- read_rds("Data/Datasets/grid_20km.rds")
+
+bcr <- read_rds("Data/Datasets/bcr_map.rds")
+```
+
+## Best Practices
+
+There are two levels of best practices we'll be applying here.
+
+First we'll [**Filter**](#filter-data) the data to include only those checklists recommended by the
+eBird data best practices(https://cornelllabofornithology.github.io/ebird-best-practices/)
+
+- Keep only standard protocols of "traveling" and "stationary counts
+- Keep only < 5 km
+- Keep only < 5 hrs (300min)
+
+Next we'll [**Summarize**](#summarize-data-by-grid) the data to address the Spatial and Temporal Biases:
+
+> **Spatial bias**: "...most participants in citizen science surveys sample near
+their homes (Luck et al. 2004), in easily accessible areas such as roadsides
+(Kadmon, Farber, and Danin 2004), or in areas and habitats of known high biodiversity
+(Prendergast et al. 1993). A simple method to reduce the spatial bias is to
+create an equal area grid over the region of interest, and sample a given
+number of checklists from within each grid cell."
+
+> **Temporal bias**: "...participants preferentially sample when they are
+available, such as weekends (Courter et al. 2013), and at times of year
+when they expect to observe more birds, notably during spring migration
+(Sullivan et al. 2014). To address the weekend bias, we recommend using
+a temporal scale of a week or multiple weeks for most analyses."
+
+- So we use 10x10km or 20x20km grids and summarize over years
+
+
+## Data files
+
+**NOTE:** These are the names of MY files
+
+- if you re-download the data you will have a different data version (this one is **May-2023**)
+- I restricted the dates of the files from May 2010 to Aug 2022
+- Make sure to update the files names to match the names of your files
+
+Match all files starting with `txt`
+ (if you followed the instructions in `Scripts/01_setup` this should show you your files)
+
+
+```{r}
+list.files("Data/Raw/", pattern = "txt")
+```
+
+
+## Filter data
+
+First we'll create the filters and then tweak the outputs. 
+
+This creates (but doesn't apply) the filters
+
+```{r filter_create}
+filters <- auk_ebd("ebd_lobcur_201005_202208_relMay-2023.txt",
+                   file_sampling = "ebd_sampling_relMay-2023.txt") |>
+  
+  # Keep only standard protocols (Best Practices)
+  auk_protocol(protocol = c("Stationary", "Traveling")) |>
+  
+  # Restrict to suggested limits (Best Practices)
+  auk_duration(c(0, 60*5)) |>
+  auk_distance(distance = c(0, 5)) |>
+  
+  # Complete data (for getting a proxy of effort)
+  auk_complete() |>
+  
+  # Date filters
+  auk_date(date = c("*-05-01", "*-07-31")) |>
+  
+  # Year filters (only applicable to sampling checklists) |>
+  auk_year(year = 2010:2022) |>
+  
+  # Spatial filters - Limit to BCR selection
+  auk_bbox(st_bbox(st_transform(bcr, crs = 4326))) # bbox must be GPS lat/lon (4326)
+```
+
+Now, we'll apply the filters and save the output
+
+- Takes time so only run if we haven't before. 
+- Delete the outputs to re-run
+
+```{r filter_apply}
+if(!file.exists("Data/Intermediate/ebird_lobcur_obs.txt")) {
+  auk_filter(
+    filters,
+    file = "Data/Intermediate/ebird_lobcur_obs.txt",             # Output
+    file_sampling = "Data/Intermediate/ebird_checklists.txt",    # Output
+    overwrite = TRUE)
+}
+```
+
+Now we'll load in the filtered data and do some more filting to clean it up a bit more.
+
+
+Convert all NA distances to 0 and filter again 
+(distance filters didn't apply to sampling - bug?). 
+This can also take a little time as the sampling (checklist) data is pretty large
+
+```{r filter_sampling}
+sampling <- read_sampling("Data/Intermediate/ebird_checklists.txt") |>
+  mutate(effort_distance_km = replace_na(effort_distance_km, 0)) |>
+  filter(effort_distance_km <= 5)
+```
+
+Convert `NA` distances to `0`
+```{r filter_obs}
+obs <- read_ebd("Data/Intermediate/ebird_lobcur_obs.txt") |>
+  mutate(effort_distance_km = replace_na(effort_distance_km, 0))
+```
+
+Finally...
+
+- Zero fill the data - Ensures that 'complete' checklists included as zero counts
+- Final checks to make sure filters worked as expected (`assert()` functions)
+- Keep only the columns which are useful to us
+  - **Note** There is a BCR column which we are *not* using as we will assign
+    BCR membership to the grid cells based on overlap with the BCR shapefiles. 
+    This means it's possible that the odd edge checklist may or may not be 
+    assigned to a grid cell with the same BCR as the observation itself, but we
+    won't worry about that. 
+
+```{r filter_finalize}
+full <- auk_zerofill(obs, sampling_events = sampling, collapse = TRUE) |>
+  mutate(year = year(observation_date), month = month(observation_date)) |>
+  assert(within_bounds(0, 5), effort_distance_km) |>
+  assert(within_bounds(2010, 2022), year) |>
+  assert(within_bounds(5, 7), month) |>
+  select("year","observation_date", "checklist_id", 
+         "observation_count", "species_observed", 
+         "latitude", "longitude",
+         "scientific_name")
+
+write_rds(full, "Data/Intermediate/lobcur_complete.rds")
+```
+
+Take a quick peak at what this data looks like
+
+```{r filter_explore}
+full |> 
+  slice(1:10)
+```
+
+## Summarize data by grid
+
+First convert this filtered eBird data to spatial
+```{r}
+ebird_sf <- read_rds("Data/Intermediate/lobcur_complete.rds") |>
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) |> # Lat/lon are GPS (4326)
+  st_transform(st_crs(grid_10)) # Now transform to match the grid data
+```
+
+Then join with grid data and summarize by grid
+
+- Get counts of checklists for each *year* for each grid (only concerned with yearly counts)
+- number of checklists total (`total_checklists`, based on the sum of checklists associated with each grid cell. If there were none, this grid cell would have an `NA` in `year`)
+- number of checklists with a bird detected 
+  (`total_obs`, based on `species_observed` which is a logical TRUE/FALSE column)
+- **This takes time to run!**
+
+```{r summarize_grid_10, cache.lazy=FALSE}
+#| cache-lazy: false # For really large objects
+ebird_grid_10_sf <- st_join(grid_10, ebird_sf) |>
+  summarize(total_checklists = sum(!is.na(year)),
+            total_obs = sum(species_observed, na.rm = TRUE),
+            presence = any(species_observed, na.rm = TRUE),
+            date_min = min(observation_date),
+            date_max = max(observation_date),
+            .by = c("year", "grid_id"))
+write_rds(ebird_grid_10_sf, "Data/Intermediate/lobcur_grid_10.rds")
+```
+
+```{r summarize_grid_20, cache.lazy=FALSE}
+#| cache-lazy: false # For really large objects
+ebird_grid_20_sf <- st_join(grid_20, ebird_sf) |>
+  summarize(total_checklists = sum(!is.na(observation_date)),
+            total_obs = sum(species_observed, na.rm = TRUE),
+            presence = any(species_observed, na.rm = TRUE),
+            date_min = min(observation_date),
+            date_max = max(observation_date),
+            .by = c("year", "grid_id"))
+write_rds(ebird_grid_20_sf, "Data/Intermediate/lobcur_grid_20.rds")
+```
+
+Take a peak at what this kind of data looks like now (without the spatial characteristics)
+
+```{r}
+ebird_grid_10_sf |>
+  arrange(grid_id, year) |>
+  st_drop_geometry() |> # Not necessary for a peak
+  slice(1:10)
+```
+
+## Centroids
+
+Calculate grid centroids as lat/lon in a non-spatial data file. 
+Most calculations don't require a spatial data frame, and they're slow to work with.
+
+First calculate centroids for the two grid dimensions (recorded in lat/lon coords)
+```{r centroids_grid}
+grid_10_centroid <- read_rds("Data/Datasets/grid_10km.rds") |>
+  st_centroid() |>
+  st_transform(4326) |>
+  mutate(coords = as.data.frame(st_coordinates(geometry))) |>
+  st_drop_geometry() |>
+  unnest(coords) |>
+  rename(lon = X, lat = Y)
+
+grid_20_centroid <- read_rds("Data/Datasets/grid_20km.rds") |>
+  st_centroid() |>
+  st_transform(4326) |>
+  mutate(coords = as.data.frame(st_coordinates(geometry))) |>
+  st_drop_geometry() |>
+  unnest(coords) |>
+  rename(lon = X, lat = Y)
+```
+
+
+Now we'll grab the checklist summaries, drop the spatial data and join to the grids centroids, 
+and save the data
+
+```{r centroids_ebird}
+read_rds("Data/Intermediate/lobcur_grid_10.rds") |>
+  st_drop_geometry() |>
+  left_join(grid_10_centroid, by = "grid_id") |>
+  write_rds("Data/Datasets/lobcur_grid_10_coords.rds")
+
+read_rds("Data/Intermediate/lobcur_grid_20.rds") |>
+  st_drop_geometry() |>
+  left_join(grid_20_centroid, by = "grid_id") |>
+  write_rds("Data/Datasets/lobcur_grid_20_coords.rds")
+```

@@ -1,0 +1,43 @@
+---
+title: "9 - Citations and References"
+---
+
+Cite ebird and ebird data: <https://ebird.org/science/citation>
+  
+> Sullivan, B.L., C.L. Wood, M.J. Iliff, R.E. Bonney, D. Fink, and S. Kelling.
+  2009. eBird: a citizen-based bird observation network in the biological sciences.
+  Biological Conservation 142: 2282-2292.
+
+> eBird Basic Dataset. Version: EBD_relMay-2023. Cornell Lab of Ornithology,
+  Ithaca, New York. May 2023.
+  
+  
+[E-bird Data Best Practices](https://cornelllabofornithology.github.io/ebird-best-practices/)
+
+> Strimas-Mackey, M., W.M. Hochachka, V. Ruiz-Gutierrez, O.J. Robinson, E.T. Miller, T. Auer, S. Kelling, D. Fink, A. Johnston. 2023. Best Practices for Using eBird Data. Version 2.0. https://ebird.github.io/ebird-best-practices/. Cornell Lab of Ornithology, Ithaca, New York. https://doi.org/10.5281/zenodo.3620739
+
+
+
+## R package citations
+```{r}
+#| echo: false
+#| results: asis
+#| message: false
+
+library(tidyverse)
+
+tribble(~ package, ~what,
+        "sf", "spatial manipulation",
+        "wk", "creating grids",
+        "auk", "filtering eBird data",
+        "tidyverse", "general data manipulation",
+        "ggplot2", "figures") |>
+  pwalk(
+    ~{
+      cat(paste0("<p><strong>Package:</strong> ", ..1, "<br>",
+                   "<strong>Used for:</strong> ", ..2, "<br>"))
+      capture.output(print(citation(..1), style = "html")) |> cat()
+      cat("<p>")
+      cat("--------")
+    })
+```

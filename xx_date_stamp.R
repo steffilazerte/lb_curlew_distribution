@@ -1,6 +1,10 @@
 
-x <- Sys.getenv("QUARTO_PROJECT_OUTPUT_FILES") |>
-  stringr::str_split(pattern = "\n") |>
-  unlist()
+nm <- Sys.getenv("QUARTO_PROJECT_OUTPUT_FILES")
 
-file.rename(x, stringr::str_replace(x, "\\.html", paste0("_", Sys.Date(), ".html")))
+if(nm != "Results/00_overview.html") {
+  x <- nm |>
+    stringr::str_split(pattern = "\n") |>
+    unlist()
+  
+  file.rename(x, stringr::str_replace(x, "\\.html", paste0("_", Sys.Date(), ".html")))
+}

@@ -1,0 +1,50 @@
+---
+title: "Overview"
+---
+
+This is an overview of the Results compiled
+
+
+```{r}
+#| include: false
+library(tidyverse)
+library(fs)
+
+f <- tibble(files = list.files("Results", ".html")) |>
+  mutate(type = str_extract(files, "^\\d{2}"),
+         date = str_extract(files, "\\d{4}-\\d{2}-\\d{2}(?=\\.html)"),
+         name = str_remove_all(files, paste0("(", type, "_)|(_", date, ")\\.html")),
+         files_move = path("Results", files)) |>
+  group_by(name) |>
+  mutate(current = date == max(date))
+
+filter(f, !current) |> 
+  pull(files_move) |>
+  file_move(new_path = "Results/Archive")
+```
+
+## Current Results
+```{r, results = "asis"}
+#| echo: false
+filter(f, current) |>
+  arrange(type) |>
+  mutate(link = paste0("- [", type, " - ", str_to_title(name), "](", files, ") (", date, ")")) |>
+  pull(link) |>
+  cat(sep = "\n")
+```
+
+
+## Historical Results (Archived)
+
+```{r results = "asis"}
+#| echo: false
+tibble(files = list.files("Results/Archive", ".html")) |>
+  mutate(type = str_extract(files, "^\\d{2}"),
+         date = str_extract(files, "\\d{4}-\\d{2}-\\d{2}(?=\\.html)"),
+         name = str_remove_all(files, paste0("(", type, "_)|(_", date, ")\\.html")),
+         files = path("Archive", files))  |>
+  arrange(type) |>
+  mutate(link = paste0("- [", type, " - ", str_to_title(name), "](", files, ") (", date, ")")) |>
+  pull(link) |>
+  cat(sep = "\n")
+```
