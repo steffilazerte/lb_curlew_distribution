@@ -5,13 +5,14 @@ title: "0 - Details and Setup"
 ## Create folders for output
 
 ```{r}
-#| warning: false
-dir.create("Data/Intermediate")
-dir.create("Data/Datasets")
-dir.create("Data/Final")
-dir.create("Data/Spatial")
-dir.create("Results")
-dir.create("Results/Figures")
+library(fs)
+dir_create("Data/Raw")
+dir_create("Data/Intermediate")
+dir_create("Data/Datasets")
+dir_create("Data/Final")
+dir_create("Data/Spatial")
+dir_create("Results")
+dir_create("Results/Figures")
 ```
 
 ## Get packages
