@@ -141,5 +141,5 @@ write_rds(grid_20, "Data/Datasets/grid_20km.rds")
 
 ## Session Info
 ```{r}
-devtools::session_info()
+sessioninfo::session_info()
 ```

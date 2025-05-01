@@ -57,7 +57,7 @@ a temporal scale of a week or multiple weeks for most analyses."
 - Make sure to update the files names to match the names of your files
 
 Match all files starting with `txt`
- (if you followed the instructions in `Scripts/01_setup` this should show you your files)
+ (if you followed the instructions in `00_setup` this should show you your files)
 
 
 ```{r}
