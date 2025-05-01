@@ -71,6 +71,14 @@ First we'll create the filters and then tweak the outputs.
 
 This creates (but doesn't apply) the filters
 
+Get the number of curlew observations checklists: 
+
+```{r}
+f0 <- read_ebd("/media/steffi/0B2747DF04804530/Data Big/Project Data/lb_curlew_distribution/ebd_lobcur_201005_202208_relMay-2023.txt")
+nrow(f0)
+```
+
+
 ```{r filter_create}
 filters <- auk_ebd("ebd_lobcur_201005_202208_relMay-2023.txt",
                    file_sampling = "ebd_sampling_relMay-2023.txt") |>
@@ -110,8 +118,13 @@ if(!file.exists("Data/Intermediate/ebird_lobcur_obs.txt")) {
 }
 ```
 
-Now we'll load in the filtered data and do some more filting to clean it up a bit more.
+How many left?
+```{r}
+f1 <- read_tsv("Data/Intermediate/ebird_lobcur_obs.txt", guess_max = 100000)
+nrow(f1)
+```
 
+Now we'll load in the filtered data and do some more filting to clean it up a bit more.
 
 Convert all NA distances to 0 and filter again 
 (distance filters didn't apply to sampling - bug?). 
