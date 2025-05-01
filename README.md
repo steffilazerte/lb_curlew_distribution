@@ -1,3 +1,4 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15320130.svg)](https://doi.org/10.5281/zenodo.15320130)
 ![publication](https://img.shields.io/badge/status-In_review-yellow)
 
 # Broad and fine scale range shifts of a species at risk across North America
