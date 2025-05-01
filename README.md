@@ -25,6 +25,8 @@ as the final data sets:
 - `Data/Final/lobcur_final_10x_bcr_control_filtered_100.csv`  - BCR grids, all checklists
 - `Data/Final/lobcur_final_10x_bcr_present_filtered_100.csv`  - BCR grids, curlew presence only
 
+See the `Data/Final/README.md` for details of the final data sets.
+
 We are extremely grateful to Dr. Sarah Supp and colleagues for sharing their [well-annotated code](https://github.com/sarahsupp/hb-migration) from their publication [Supp et al. (2015)](https://esajournals.onlinelibrary.wiley.com/doi/full/10.1890/ES15-00239.1), 
 parts of which we have used as a guide for our analyses. 
 
@@ -57,6 +59,7 @@ ebird data
 Although not in the intermediate folder, these datasets are intermediate in nature.
 - `Spatial` - Output Spatial files
 - `Final` - Final datasets created by these scripts, intented for use in analysis.
+  Also includes a README.md describing these data.
 
 > Note that the original, eBird data is not stored here, but can be obtained from
 > eBird directly. See details in `00_setup.qmd` under 'Acquire raw data files'.

@@ -11,12 +11,14 @@ Docs
 
 # Ignore all data files except the final one
 Data/*
-!Data/Final
+!Data/
+!Data/Final/
 Data/Final/*
-!Data/Final/lobcur_final_10x_all_control_filtered_100.csv  # Name of the final data files
-!Data/Final/lobcur_final_10x_all_present_filtered_100.csv  # Name of the final data files
-!Data/Final/lobcur_final_10x_bcr_control_filtered_100.csv  # Name of the final data files
-!Data/Final/lobcur_final_10x_bcr_present_filtered_100.csv  # Name of the final data files
-!Data/README.md
+# Names of the final data files
+!Data/Final/lobcur_final_10x_all_control_filtered_100.csv
+!Data/Final/lobcur_final_10x_all_present_filtered_100.csv
+!Data/Final/lobcur_final_10x_bcr_control_filtered_100.csv
+!Data/Final/lobcur_final_10x_bcr_present_filtered_100.csv
+!Data/Final/README.md
 
 /.quarto/
