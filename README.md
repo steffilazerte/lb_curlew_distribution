@@ -1,7 +1,9 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15320130.svg)](https://doi.org/10.5281/zenodo.15320130)
-![publication](https://img.shields.io/badge/status-In_review-yellow)
+[![publication](https://img.shields.io/badge/status-Published-green)](https://onlinelibrary.wiley.com/doi/10.1002/ece3.71537)
 
 # Broad and fine scale range shifts of a species at risk across North America
+
+*[Published in Ecology & Evolution 2025](https://onlinelibrary.wiley.com/doi/10.1002/ece3.71537)*
 
 Kelsey Freitag<sup>1*</sup>, Ann E. McKellar<sup>2</sup>, David Bradley<sup>3</sup>, Scott A, Flemming<sup>4</sup>, 
 [Steffi LaZerte](https://steffilazerte.ca)<sup>5</sup>, Mateen Shaikh<sup>6</sup>, Matthew W. Reudink<sup>1</sup>
