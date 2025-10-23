@@ -34,7 +34,7 @@ Note that these are specific to the type of treatment (ie. curlew present OR con
 - **extent_m2** - Convex hull of our selected grid cells, and then the area of this polygon (extent() function) in m^2
 - **grid_n** - the total number of grid cells in this group (i.e. overall if this is a "control" data file, or those with a curlew observation if this is a "present" file)
 - **grid_area_m2** - the total area occupied by these grid cells (in m^2)
-- **cent_lat / cent_lon** - the decimal degrees lat/lon of the centroid of the area definied by these grid cells
+- **cent_lat / cent_lon** - the decimal degrees lat/lon of the centroid of the area defined by these grid cells
 - **min_lat/max_lat/min_lon/max_lon** - the decimal degrees max/min of lat/lon around the area defined by these grid cells
 
 ## Columns - Sample sizes
