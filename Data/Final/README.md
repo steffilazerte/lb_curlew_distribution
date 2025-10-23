@@ -1,7 +1,7 @@
 # Final data sets
 
 These data are (at least partially) derived from eBird data.
-Please se the `ebird_terms_of_use.txt` for the licensing of such data.
+Please see the `ebird_terms_of_use.txt` for the licensing of such data.
 
 ## File names
 
